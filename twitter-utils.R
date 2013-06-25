@@ -242,11 +242,11 @@ twChartGivenTopics <- function(text=NULL, tdm.matrix=NULL, output.dir=".", outpu
     dev.off()
 }
 
-twChartWhoRetweetsWhom <- function(text, output.dir=".", output.file="who-retweets-whom.png") {
+twChartWhoRetweetsWhom <- function(df, output.dir=".", output.file="who-retweets-whom.png") {
     filename <- file.path(output.dir, output.file)
     png(filename, width=width, height=height, units="px")   
     ##https://sites.google.com/site/miningtwitter/questions/user-tweets/who-retweet
-    dm_txt <- text
+    dm_txt <- df$text
     ## regular expressions to find retweets
     grep("(RT|via)((?:\\b\\W*@\\w+)+)", dm_txt, 
          ignore.case=TRUE, value=TRUE)
@@ -256,7 +256,7 @@ twChartWhoRetweetsWhom <- function(text, output.dir=".", output.file="who-retwee
         dm_txt, ignore.case=TRUE)
 
     ## show retweets (these are the ones we want to focus on)
-    dm_txt[rt_patterns]
+    ## dm_txt[rt_patterns]
     ## create list to store user names
     who_retweet = as.list(1:length(rt_patterns))
     who_post = as.list(1:length(rt_patterns))
@@ -264,7 +264,7 @@ twChartWhoRetweetsWhom <- function(text, output.dir=".", output.file="who-retwee
     ## for loop
     for (i in 1:length(rt_patterns)) { 
         ## get tweet with retweet entity
-        twit = tweets_df[rt_patterns[i],]
+        twit = df[rt_patterns[i],]
         ## get retweet source 
         poster = str_extract_all(twit$text,
             "(RT|via)((?:\\b\\W*@\\w+)+)") 
