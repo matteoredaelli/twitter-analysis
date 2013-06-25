@@ -82,6 +82,7 @@ twChartAuthorsWithRetweets <- function(df, output.dir=".", output.file="authors-
     png(filename, width=width, height=height, units="px")
     d = aggregate(df$retweetCount, by=list(df$screenName), FUN=sum)
     colnames(d) = c("User", "retweets")
+    d <- subset(d, retweets>0)
     p <- barchart( User ~ retweets, data=d, col=color, xlab="retweets", ylab="people")
     print(p)
     dev.off()
