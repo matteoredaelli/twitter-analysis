@@ -58,7 +58,7 @@ twTopAgents <- function(df, top=10) {
 twHistTweets <- function(df, breaks="30 mins", output.dir=".", output.file="tweets.png", width=1000, height=500, color="red") {
     filename <- file.path(output.dir, output.file)
     png(filename, width=width, height=height, units="px")
-    p <- histogram(cut(df$created, breaks=breaks), scales = list(x = list(rot = 90)), main="Tweets overt time", type="count", xlab="time", ylab="tweets", col=color)
+    p <- histogram(cut(df$created, breaks=breaks), scales = list(x = list(rot = 90)), type="count", xlab="time", ylab="tweets", col=color)
     print(p)
     dev.off()
 }
@@ -80,8 +80,8 @@ twChartAgents <- function(df, output.dir=".", output.file="agents.png", width=10
 ##########
 twChartAuthors <- function(df, output.dir=".", output.file="authors.png", width=1000, height=500, color="red", top=10) {
     filename <- file.path(output.dir, output.file)
-    png(filename, width=width, height=height, units="px")
     sources = twTopContributors(df)
+    png(filename, width=width, height=height, units="px")
     p <- barchart(sources, col=color, xlab="tweets", ylab="people")
     print(p)
     dev.off()
@@ -92,10 +92,11 @@ twChartAuthors <- function(df, output.dir=".", output.file="authors.png", width=
 ##########
 twChartAuthorsWithRetweets <- function(df, output.dir=".", output.file="authors-with-retweets.png", width=1000, height=500, color="red", top=10) {
     filename <- file.path(output.dir, output.file)
-    png(filename, width=width, height=height, units="px")
+
     d = aggregate(df$retweetCount, by=list(df$screenName), FUN=sum)
     colnames(d) = c("User", "retweets")
     d <- subset(d, retweets>0)
+    png(filename, width=width, height=height, units="px")
     p <- barchart( User ~ retweets, data=d, col=color, xlab="retweets", ylab="people")
     print(p)
     dev.off()
@@ -105,18 +106,16 @@ twChartAuthorsWithReplies <- function(df, output.dir=".", output.file="authors-w
     filename <- file.path(output.dir, output.file)
     png(filename, width=width, height=height, units="px")
     d = table(df[!is.na(df$replyToSID),]$screenName)
-    p <- barchart( d, col=color, xlab="replies", ylab="people", title="Top Authors with replies")
+    p <- barchart( d, col=color, xlab="replies", ylab="people")
     print(p)
     dev.off()
 }
 
 twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png", width=1000, height=500, color="red", top=10) {
     filename <- file.path(output.dir, output.file)
-    png(filename, width=width, height=height, units="px")
     
     d = aggregate(df$retweetCount, by=list(df$screenName), FUN=sum)
     colnames(d) = c("User", "retweets")
-    
     d2 <- as.data.frame(table(df$replyToSN))
     colnames(d2) = c("User", "replies")
 
@@ -180,9 +179,8 @@ twBuildTDMMatrix <- function(text, stopwords=c(stopwords("english"), stopwords("
     return(m)
 }
 
-twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="wordcloud.png", stopwords=c(stopwords("english"), stopwords("italian"))) {
+twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="wordcloud.png", width=1000, height=500, stopwords=c(stopwords("english"), stopwords("italian"))) {
     filename <- file.path(output.dir, output.file)
-    png(filename, width=width, height=height, units="px")
 
     if(is.null(tdm.matrix))
         tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
@@ -191,7 +189,8 @@ twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.
     word_freqs = sort(rowSums(tdm.matrix), decreasing=TRUE) 
     ## create a data frame with words and their frequencies
     dm <- data.frame(word=names(word_freqs), freq=word_freqs)
- 
+    
+    png(filename, width=width, height=height, units="px")
     p <- wordcloud(dm$word, dm$freq, random.order=FALSE, max.words=Inf,
                    colors=brewer.pal(8, "Dark2"))
     print(p)
@@ -199,12 +198,12 @@ twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.
     dev.off()
 }
 
-twChartGivenTopics <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="given-topics.png", stopwords=c(stopwords("english"), stopwords("italian"))) {
+twChartGivenTopics <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="given-topics.png", width=1000, height=500,  stopwords=c(stopwords("english"), stopwords("italian"))) {
     if(is.null(tdm.matrix))
         tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
     
     filename <- file.path(output.dir, output.file)
-    png(filename, width=width, height=height, units="px")                         
+                        
     ## https://sites.google.com/site/miningtwitter/questions/talking-about/given-topic
     wc = rowSums(tdm.matrix)
 
@@ -250,15 +249,16 @@ twChartGivenTopics <- function(text=NULL, tdm.matrix=NULL, output.dir=".", outpu
     E(g)$color = hsv(0, 0, 0.7, 0.3)
 
     ## plot
+    png(filename, width=width, height=height, units="px") 
     plot(g, layout=glay)
-    title("\nGiven topics",
-          col.main="gray40", cex.main=1.5, family="serif")
+    ##title("\nGiven topics",
+    ##      col.main="gray40", cex.main=1.5, family="serif")
     dev.off()
 }
 
-twChartWhoRetweetsWhom <- function(df, output.dir=".", output.file="who-retweets-whom.png") {
+twChartWhoRetweetsWhom <- function(df, output.dir=".", output.file="who-retweets-whom.png", width=1000, height=500) {
     filename <- file.path(output.dir, output.file)
-    png(filename, width=width, height=height, units="px")   
+ 
     ##https://sites.google.com/site/miningtwitter/questions/user-tweets/who-retweet
     dm_txt <- df$text
     ## regular expressions to find retweets
@@ -301,12 +301,14 @@ twChartWhoRetweetsWhom <- function(df, output.dir=".", output.file="who-retweets
 
     ## get vertex names
     ver_labs = get.vertex.attribute(rt_graph, "name", index=V(rt_graph))
-
+    
+    png(filename, width=width, height=height, units="px")  
+    
     ## choose some layout
     glay = layout.fruchterman.reingold(rt_graph)
 
     ## plot
-
+ 
     par(bg="white", mar=c(1,1,1,1))
     plot(rt_graph, layout=glay,
          vertex.color=hsv(h=.35, s=1, v=.7, alpha=0.1),
@@ -322,20 +324,20 @@ twChartWhoRetweetsWhom <- function(df, output.dir=".", output.file="who-retweets
          edge.width=3,
          edge.color=hsv(h=.35, s=1, v=.7, alpha=0.4))
 # add title
-    title("\nWho retweets whom",
-          cex.main=1, col.main="red", family="mono")
+    ##title("\nWho retweets whom",
+    ##      cex.main=1, col.main="red", family="mono")
     dev.off()
 }
 
 
-twChartDendrogram <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="dendrogram.png", stopwords=c(stopwords("english"), stopwords("italian"))) {
+twChartDendrogram <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="dendrogram.png", width=1000, height=500, stopwords=c(stopwords("english"), stopwords("italian"))) {
     if(is.null(tdm.matrix))
         tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
 
     m = tdm.matrix
     
     filename <- file.path(output.dir, output.file)
-    png(filename, width=width, height=height, units="px")                         
+                        
 
     ## remove sparse terms (word frequency > 90% percentile)
     wf = rowSums(m)
@@ -354,6 +356,7 @@ twChartDendrogram <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output
     clus1 = hclust(m1dist, method="ward")
 
     ## plot dendrogram
+    png(filename, width=width, height=height, units="px") 
     plot(clus1, cex=0.7)
     dev.off()
 }

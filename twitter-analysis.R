@@ -13,9 +13,11 @@
 ##    You should have received a copy of the GNU General Public License
 ##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-width=900
-height=900
-color="red"
+source("twitter-utils.R")
+
+width <- 600
+height <- 500
+color <- "red"
 tz <- "Europe/Rome"
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -23,17 +25,15 @@ source.file <- ifelse(is.null(args[1]), "tweets_df.Rdata", args[1])
 
 load(source.file)
 
-source("twitter-utils.R")
-
 df <- twNormalizeDate(tweets_df, tz)
 
 twHistTweets(df, breaks="30 mins", width=1000, height=500, color="red")
 
-twChartAgents(df)
-twChartAuthors(df)
-twChartAuthorsWithRetweets(df)
-twChartAuthorsWithReplies(df)
-twChartInfluencers(df)
+twChartAgents(df, width=width, height=height)
+twChartAuthors(df, width=width, height=height)
+twChartAuthorsWithRetweets(df, width=width, height=height)
+twChartAuthorsWithReplies(df, width=width, height=height)
+twChartInfluencers(df, width=width, height=height)
 
 stopwords = c("ddaypirelli", "pirelli", stopwords("english"), stopwords("italian"))
 
@@ -42,7 +42,7 @@ text = tweets_df$text
 text <- twCleanText(text)
 tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
 
-twChartWordcloud(tdm.matrix=tdm.matrix)
-twChartGivenTopics(tdm.matrix=tdm.matrix)
-twChartWhoRetweetsWhom(tweets_df)
-twChartDendrogram(tdm.matrix=tdm.matrix)
+twChartWordcloud(tdm.matrix=tdm.matrix, width=width, height=height)
+twChartGivenTopics(tdm.matrix=tdm.matrix, width=width, height=height)
+twChartWhoRetweetsWhom(tweets_df, width=width, height=height)
+twChartDendrogram(tdm.matrix=tdm.matrix, width=width, height=height)
