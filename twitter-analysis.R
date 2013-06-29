@@ -13,36 +13,83 @@
 ##    You should have received a copy of the GNU General Public License
 ##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#################################################################
+## file history
+##################################################################
+## 2013-06-24: matteo redaelli: first release
+##
+##
+
+library(getopt)
+library(logging)
+
+## log setup
+basicConfig()
+
+#get options, using the spec as defined by the enclosed list.
+#we read the options from the default: commandArgs(TRUE).
+spec = matrix(c(
+  'verbose', 'v', 2, "integer",
+  'help' , 'h', 0, "logical",
+  'height' , 'H', 1, "character",
+  'width' , 'W', 1, "character",
+  'data.file' , 'd', 1, "character",
+  'tz' , 't', 1, "integer",
+  'color' , 'c', 1, "logical",
+  'stopwords' , 's', 1, "logical",
+  'version' , 'V', 0, "logical"
+  ), byrow=TRUE, ncol=4)
+
+opt = getopt(spec);
+# if help was asked for print a friendly message
+# and exit with a non-zero error code
+if ( !is.null(opt$help) ) {
+  cat(getopt(spec, usage=TRUE))
+  q(status=1);
+}
+
+if ( !is.null(opt$version) ) {
+  cat("version 0.1\n")
+  q(status=1)
+}
+
 source("twitter-utils.R")
 
-width <- 600
-height <- 500
-color <- "red"
-tz <- "Europe/Rome"
+#set some reasonable defaults for the options that are needed,
+#but were not specified.
+if ( is.null(opt$color ) ) { opt$color = "red" }
+if ( is.null(opt$data.file ) ) { opt$data.file = "tweets_df.Rdata" }
+if ( is.null(opt$height ) ) { opt$height = 600 }
+if ( is.null(opt$width ) ) { opt$width = 600 }
+if ( is.null(opt$tz ) ) { opt$tz = "Europe/Rome" }
 
-args <- commandArgs(trailingOnly = TRUE)
-source.file <- ifelse(is.null(args[1]), "tweets_df.Rdata", args[1])
+if ( is.null(opt$stopwords) ) {
+  opt$stopwords <- stopwords('english')
+} else {
+  opt$stopwords <- eval(parse(text=opt$stopwords))
+}
 
-load(source.file)
+loginfo(sprintf("Stopwords: %s", paste(opt$stopwords, sep=",", collapse=",")))
 
-df <- twNormalizeDate(tweets_df, tz)
 
-twHistTweets(df, breaks="30 mins", width=1000, height=500, color="red")
+loginfo(sprintf("Loading file %s", opt$data.file))
+load(opt$data.file)
 
-twChartAgents(df, width=width, height=height)
-twChartAuthors(df, width=width, height=height)
-twChartAuthorsWithRetweets(df, width=width, height=height)
-twChartAuthorsWithReplies(df, width=width, height=height)
-twChartInfluencers(df, width=width, height=height)
+df <- twNormalizeDate(tweets_df, opt$tz)
 
-stopwords = c("ddaypirelli", "pirelli", stopwords("english"), stopwords("italian"))
+twHistTweets(df, breaks="30 mins", width=opt$width, height=opt$height, color=opt$color)
 
+twChartAgents(df, width=opt$width, height=opt$height, color=opt$color)
+twChartAuthors(df, width=opt$width, height=opt$height, color=opt$color)
+twChartAuthorsWithRetweets(df, width=opt$width, height=opt$height, color=opt$color)
+twChartAuthorsWithReplies(df, width=opt$width, height=opt$height, color=opt$color)
+twChartInfluencers(df, width=opt$width, height=opt$height, color=opt$color)
 
 text = tweets_df$text
 text <- twCleanText(text)
-tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
+tdm.matrix <- twBuildTDMMatrix(text, stopwords=opt$stopwords)
 
-twChartWordcloud(tdm.matrix=tdm.matrix, width=width, height=height)
-twChartGivenTopics(tdm.matrix=tdm.matrix, width=width, height=height)
-twChartWhoRetweetsWhom(tweets_df, width=width, height=height)
-twChartDendrogram(tdm.matrix=tdm.matrix, width=width, height=height)
+twChartWordcloud(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
+twChartGivenTopics(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
+twChartWhoRetweetsWhom(tweets_df, width=opt$width, height=opt$height)
+twChartDendrogram(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
