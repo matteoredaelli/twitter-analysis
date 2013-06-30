@@ -35,6 +35,7 @@ spec = matrix(c(
   'width' , 'W', 1, "character",
   'data.file' , 'd', 1, "character",
   'tz' , 't', 1, "integer",
+  'top' , 'T', 1, "integer",
   'color' , 'c', 1, "logical",
   'stopwords' , 's', 1, "logical",
   'version' , 'V', 0, "logical"
@@ -62,7 +63,7 @@ if ( is.null(opt$data.file ) ) { opt$data.file = "tweets_df.Rdata" }
 if ( is.null(opt$height ) ) { opt$height = 600 }
 if ( is.null(opt$width ) ) { opt$width = 600 }
 if ( is.null(opt$tz ) ) { opt$tz = "Europe/Rome" }
-
+if ( is.null(opt$top ) ) { opt$top = 10 }
 if ( is.null(opt$stopwords) ) {
   opt$stopwords <- stopwords('english')
 } else {
@@ -79,10 +80,10 @@ df <- twNormalizeDate(tweets_df, opt$tz)
 
 twHistTweets(df, breaks="30 mins", width=opt$width, height=opt$height, color=opt$color)
 
-twChartAgents(df, width=opt$width, height=opt$height, color=opt$color)
-twChartAuthors(df, width=opt$width, height=opt$height, color=opt$color)
-twChartAuthorsWithRetweets(df, width=opt$width, height=opt$height, color=opt$color)
-twChartAuthorsWithReplies(df, width=opt$width, height=opt$height, color=opt$color)
+twChartAgents(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top)
+twChartAuthors(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top)
+twChartAuthorsWithRetweets(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top)
+twChartAuthorsWithReplies(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top)
 twChartInfluencers(df, width=opt$width, height=opt$height, color=opt$color)
 
 text = tweets_df$text
