@@ -149,7 +149,9 @@ twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png"
     ##m3 <- m2[order(-m2$tweets),]
 
     png(filename, width=width, height=height, units="px")
-    p <- ggplot(m2, aes(x=tweets, y=retweets, size=replies, label=User),legend=FALSE) + geom_point(colour="white", fill="red", shape=21) + geom_text(size=4)+ theme_bw()
+    p <- ggplot(m2, aes(x=tweets, y=retweets, size=replies, label=User),legend=FALSE) +
+        geom_point(colour="white", fill="red", shape=21) +
+            geom_text(size=4)+ theme_bw()
     print(p)
     dev.off()
 
@@ -157,11 +159,12 @@ twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png"
     m2.melt <- melt(m2, id.vars = c("User"))
 
     ## plot (Cleveland dot plot)
-    bis.filename <- paste("bis-",filename, sep="")
-    png(bis.filename, width=width, height=height, units="px")
-    ggplot(m2.melt, aes(x = User, y = value, color = variable)) + geom_point() + 
-        coord_flip() + ggtitle("Counts of tweets, retweets, and messages") + xlab("Counts") + 
-            ylab("Users")
+    output2.file <-  paste("2", output.file, sep="-")
+    filename <- file.path(output.dir, output2.file)
+    png(filename, width=width, height=height, units="px")
+    p <- ggplot(m2.melt, aes(x = User, y = value, color = variable)) + geom_point() + 
+        coord_flip() + ggtitle("Counts of tweets, retweets, and messages") +
+            xlab("Counts") + ylab("Users")
     print(p)
     dev.off()
 }
