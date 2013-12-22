@@ -97,7 +97,7 @@ twChartAgents <- function(df, output.dir=".", output.file="agents.png", width=10
 ##########
 twChartAuthors <- function(df, output.dir=".", output.file="authors.png", width=1000, height=500, color="red", top=10) {
     filename <- file.path(output.dir, output.file)
-    sources = twTopContributors(df)
+    sources = twTopContributors(df, top=top)
     png(filename, width=width, height=height, units="px")
     p <- barchart(sources, col=color, xlab="tweets", ylab="people")
     print(p)
@@ -112,7 +112,11 @@ twChartAuthorsWithRetweets <- function(df, output.dir=".", output.file="authors-
 
     d = aggregate(df$retweetCount, by=list(df$screenName), FUN=sum)
     colnames(d) = c("User", "retweets")
-    d <- subset(d, retweets>0)
+
+    ##d <- subset(d, retweets>0)
+    top <- min(top, nrow(d))
+    d <- d[with(d, order(-retweets)),][1:top,]
+    
     png(filename, width=width, height=height, units="px")
     p <- barchart( User ~ retweets, data=d, col=color, xlab="retweets", ylab="people")
     print(p)
@@ -128,7 +132,7 @@ twChartAuthorsWithReplies <- function(df, output.dir=".", output.file="authors-w
     dev.off()
 }
 
-twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png", width=1000, height=500, color="red", top=10) {
+twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png", width=1000, height=500, color="red", top=30) {
     filename <- file.path(output.dir, output.file)
     
     d = aggregate(df$retweetCount, by=list(df$screenName), FUN=sum)
@@ -145,7 +149,10 @@ twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png"
     
     m2 = merge(m, d1, all=TRUE)
     m2[is.na(m2)] = 0
-    
+
+    top <- min(top, nrow(m2))
+    m2 <- m2[with(m2, order(-retweets, -tweets)),][1:top,]
+
     ##m3 <- m2[order(-m2$tweets),]
 
     png(filename, width=width, height=height, units="px")
