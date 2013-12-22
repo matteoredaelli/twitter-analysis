@@ -91,6 +91,9 @@ text <- twCleanText(text)
 tdm.matrix <- twBuildTDMMatrix(text, stopwords=opt$stopwords)
 
 twChartWordcloud(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
+#twChartWordcloud(twTopHashtags(text, top=30), width=opt$width, height=opt$height, output.file="wordcloud-hashtags.png")
 twChartGivenTopics(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
 twChartWhoRetweetsWhom(tweets_df, width=opt$width, height=opt$height)
 twChartDendrogram(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
+
+# todo: http://bodongchen.com/blog/2013/02/demo-of-using-twitter-hashtag-analytics-package-to-analyze-tweets-from-lak13/

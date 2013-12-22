@@ -51,6 +51,22 @@ twTopAgents <- function(df, top=10) {
     return(t[1:top])
 }
 
+twTopLinks <- function(df, top=10) {
+    sort(table(unlist(lapply(strsplit(tolower(df$text), '[ :.,;]'), function(w) grep('http[s]?://.+', w, value=TRUE)))), decreasing=TRUE)[1:top]
+}
+
+twTopHashtags <- function(df, top=10) {
+    sort(table(unlist(lapply(strsplit(tolower(df$text), '[ :.,;]'), function(w) grep('#', w, value=TRUE)))), decreasing=TRUE)[1:top]
+}
+
+twTopWords <- function(df=NULL, tdm.matrix=NULL, stopwords=c(stopwords("en"), stopwords("it")), top=10) {
+    if(is.null(tdm.matrix))
+        tdm.matrix <- twBuildTDMMatrix(df$text, stopwords=stopwords)
+    
+    ## get word counts in decreasing order
+    word_freqs = sort(rowSums(tdm.matrix), decreasing=TRUE)
+    sort(table(unlist(lapply(strsplit(tolower(df$text), '[ :.,;]'), function(w) grep('#', w, value=TRUE)))), decreasing=TRUE)[1:top]
+}
 
 #########
 ## tot
@@ -130,15 +146,38 @@ twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png"
     m2[is.na(m2)] = 0
     
     ##m3 <- m2[order(-m2$tweets),]
+
     png(filename, width=width, height=height, units="px")
     p <- ggplot(m2, aes(x=tweets, y=retweets, size=replies, label=User),legend=FALSE) + geom_point(colour="white", fill="red", shape=21) + geom_text(size=4)+ theme_bw()
     print(p)
     dev.off()
+
+    # melt data
+    m2.melt <- melt(m2, id.vars = c("User"))
+
+    ## plot (Cleveland dot plot)
+    bis.filename <- paste("bis-",filename, sep="")
+    png(bis.filename, width=width, height=height, units="px")
+    ggplot(m2.melt, aes(x = User, y = value, color = variable)) + geom_point() + 
+        coord_flip() + ggtitle("Counts of tweets, retweets, and messages") + xlab("Counts") + 
+            ylab("Users")
+    print(p)
+    dev.off()
 }
+ 
+try.tolower <- function(x) {
+    y = NA
+    try_error = tryCatch(tolower(x), error=function(e) e)
+    if (!inherits(try_error, "error"))
+        y = tolower(x)
+    return(y)
+}
+
 
 twCleanText <- function(text, remove.retweets=TRUE, remove.at=TRUE) {
     results = text
 
+    results = sapply(results, try.tolower)
     ## remove retweet entities
     if (remove.retweets)
         results = gsub("(RT|via)((?:\\b\\W*@\\w+)+)", "", results)
@@ -154,6 +193,9 @@ twCleanText <- function(text, remove.retweets=TRUE, remove.at=TRUE) {
     ## remove unnecessary spaces
     results = gsub("[ \t]{2,}", "", results)
     results = gsub("^\\s+|\\s+$", "", results)
+    ## remove unnecessary newlins
+    results = gsub("\\n", " ", results)
+    
     names(results) = NULL
     
     ## remove empty results (if any)
@@ -164,7 +206,10 @@ twCleanText <- function(text, remove.retweets=TRUE, remove.at=TRUE) {
 #https://sites.google.com/site/miningtwitter/questions/talking-about/wordclouds/wordcloud1
 
 
-twBuildTDMMatrix <- function(text, stopwords=c(stopwords("english"), stopwords("italian"))) {
+twBuildTDMMatrix <- function(text, stopwords=c(stopwords("en"), stopwords("it")), twCleanText=TRUE) {
+    if(twCleanText)
+        text <- twCleanText(text)
+    
     ## create a corpus
     corpus <- Corpus(VectorSource(text))
 
@@ -330,7 +375,7 @@ twChartWhoRetweetsWhom <- function(df, output.dir=".", output.file="who-retweets
 }
 
 
-twChartDendrogram <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="dendrogram.png", width=1000, height=500, stopwords=c(stopwords("english"), stopwords("italian"))) {
+twChartDendrogram <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="dendrogram.png", width=1000, height=500, stopwords=c(stopwords("en"), stopwords("it"))) {
     if(is.null(tdm.matrix))
         tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
 
