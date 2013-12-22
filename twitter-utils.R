@@ -16,6 +16,7 @@
 library(lattice)
 library(stringr)
 library(ggplot2)
+library(reshape2)
 library(igraph)
 library(tm)
 library(wordcloud)
