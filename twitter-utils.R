@@ -236,16 +236,20 @@ twBuildTDMMatrix <- function(text, stopwords=c(stopwords("en"), stopwords("it"))
     return(m)
 }
 
-twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="wordcloud.png", width=1000, height=500, stopwords=c(stopwords("en"), stopwords("it"))) {
+twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, words=NULL, freqs=NULL, output.dir=".", output.file="wordcloud.png", width=1000, height=500, my.stopwords=c(stopwords("en"), stopwords("it"))) {
     filename <- file.path(output.dir, output.file)
 
-    if(is.null(tdm.matrix))
-        tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
+    if(!is.null(words) && !is.null(freqs)) {
+        dm <- data.frame(word=words, freq=freqs)
+    } else {
+        if(is.null(tdm.matrix))
+            tdm.matrix <- twBuildTDMMatrix(text, stopwords=my.stopwords)
     
-    ## get word counts in decreasing order
-    word_freqs = sort(rowSums(tdm.matrix), decreasing=TRUE) 
-    ## create a data frame with words and their frequencies
-    dm <- data.frame(word=names(word_freqs), freq=word_freqs)
+        ## get word counts in decreasing order
+        word_freqs = sort(rowSums(tdm.matrix), decreasing=TRUE) 
+        ## create a data frame with words and their frequencies
+        dm <- data.frame(word=names(word_freqs), freq=word_freqs)
+    }
     
     png(filename, width=width, height=height, units="px")
     p <- wordcloud(dm$word, dm$freq, random.order=FALSE, max.words=Inf,
@@ -255,9 +259,9 @@ twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.
     dev.off()
 }
 
-twChartGivenTopics <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="given-topics.png", width=1000, height=500,  stopwords=c(stopwords("english"), stopwords("italian"))) {
+twChartGivenTopics <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="given-topics.png", width=1000, height=500,  my.stopwords=c(stopwords("en"), stopwords("it"))) {
     if(is.null(tdm.matrix))
-        tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
+        tdm.matrix <- twBuildTDMMatrix(text, stopwords=my.stopwords)
     
     filename <- file.path(output.dir, output.file)
                         
@@ -387,9 +391,9 @@ twChartWhoRetweetsWhom <- function(df, output.dir=".", output.file="who-retweets
 }
 
 
-twChartDendrogram <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="dendrogram.png", width=1000, height=500, stopwords=c(stopwords("en"), stopwords("it"))) {
+twChartDendrogram <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="dendrogram.png", width=1000, height=500, my.stopwords=c(stopwords("en"), stopwords("it"))) {
     if(is.null(tdm.matrix))
-        tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
+        tdm.matrix <- twBuildTDMMatrix(text, stopwords=my.stopwords)
 
     m = tdm.matrix
     

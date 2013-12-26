@@ -88,7 +88,7 @@ twChartInfluencers(df, width=opt$width, height=opt$height, color=opt$color)
 
 text = tweets_df$text
 text <- twCleanText(text)
-tdm.matrix <- twBuildTDMMatrix(text, stopwords=opt$stopwords)
+tdm.matrix <- twBuildTDMMatrix(text, my.stopwords=opt$stopwords)
 
 twChartWordcloud(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
 twChartWordcloud(twTopHashtags(text, top=10), width=opt$width, height=opt$height, output.file="wordcloud-hashtags.png")
