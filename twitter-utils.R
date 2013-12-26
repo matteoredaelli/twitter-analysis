@@ -43,7 +43,9 @@ twTopContributors <- function(df, top=10) {
 }
 
 twTopAgents <- function(df, top=10) {
-    d = df$statusSource
+    d <- df$statusSource
+    d <- gsub("  ", " ", d)
+    d <- gsub("Twitter for", "", d)
     d <- gsub("</a>", "", d)
     d <- strsplit(d, ">")
     d <- sapply(d, function(x) ifelse(length(x) > 1, x[2], x[1]))
@@ -52,21 +54,20 @@ twTopAgents <- function(df, top=10) {
     return(t[1:top])
 }
 
-twTopLinks <- function(df, top=10) {
-    sort(table(unlist(lapply(strsplit(tolower(df$text), '[ :.,;]'), function(w) grep('http[s]?://.+', w, value=TRUE)))), decreasing=TRUE)[1:top]
+twTopLinks <- function(text, top=10) {
+    sort(table(unlist(lapply(strsplit(tolower(text), '[ :.,;]'), function(w) grep('http[s]?://.+', w, value=TRUE)))), decreasing=TRUE)[1:top]
 }
 
-twTopHashtags <- function(df, top=10) {
-    sort(table(unlist(lapply(strsplit(tolower(df$text), '[ :.,;]'), function(w) grep('#', w, value=TRUE)))), decreasing=TRUE)[1:top]
+twTopHashtags <- function(text, top=10) {
+    sort(table(unlist(lapply(strsplit(tolower(text), '[ :.,;]'), function(w) grep('#', w, value=TRUE)))), decreasing=TRUE)[1:top]
 }
 
-twTopWords <- function(df=NULL, tdm.matrix=NULL, stopwords=c(stopwords("en"), stopwords("it")), top=10) {
+twTopWords <- function(text=NULL, tdm.matrix=NULL, stopwords=NULL, top=10) {
     if(is.null(tdm.matrix))
-        tdm.matrix <- twBuildTDMMatrix(df$text, stopwords=stopwords)
+        tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
     
     ## get word counts in decreasing order
-    word_freqs = sort(rowSums(tdm.matrix), decreasing=TRUE)
-    sort(table(unlist(lapply(strsplit(tolower(df$text), '[ :.,;]'), function(w) grep('#', w, value=TRUE)))), decreasing=TRUE)[1:top]
+    sort(rowSums(tdm.matrix), decreasing=TRUE)[1:top]
 }
 
 #########
@@ -217,7 +218,7 @@ twCleanText <- function(text, remove.retweets=TRUE, remove.at=TRUE) {
 #https://sites.google.com/site/miningtwitter/questions/talking-about/wordclouds/wordcloud1
 
 
-twBuildTDMMatrix <- function(text, stopwords=c(stopwords("en"), stopwords("it")), twCleanText=TRUE) {
+twBuildTDMMatrix <- function(text, stopwords=c(stopwords("en"), stopwords("it")), twCleanText=FALSE) {
     if(twCleanText)
         text <- twCleanText(text)
     
@@ -235,7 +236,7 @@ twBuildTDMMatrix <- function(text, stopwords=c(stopwords("en"), stopwords("it"))
     return(m)
 }
 
-twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="wordcloud.png", width=1000, height=500, stopwords=c(stopwords("english"), stopwords("italian"))) {
+twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, output.dir=".", output.file="wordcloud.png", width=1000, height=500, stopwords=c(stopwords("en"), stopwords("it"))) {
     filename <- file.path(output.dir, output.file)
 
     if(is.null(tdm.matrix))
