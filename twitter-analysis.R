@@ -50,7 +50,7 @@ if ( !is.null(opt$help) ) {
 }
 
 if ( !is.null(opt$version) ) {
-  cat("version 0.1\n")
+  cat("version 0.2\n")
   q(status=1)
 }
 
@@ -84,14 +84,19 @@ try(twChartAgents(df, width=opt$width, height=opt$height, color=opt$color, top=o
 try(twChartAuthors(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top))
 try(twChartAuthorsWithRetweets(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top))
 try(twChartAuthorsWithReplies(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top))
-try(twChartInfluencers(df, width=opt$width, height=opt$height, color=opt$color))
-
+try(twChartInfluencers(df, width=opt$width, height=opt$height,
+                       color=opt$color, top=opt$top,
+                       from=1, output.file="influencers.png"))
+try(twChartInfluencers(df, width=opt$width, height=opt$height,
+                       color=opt$color, top=opt$top,
+                       from=2, output.file="influencers-excluding-topscores-1.png"))
 text = tweets_df$text
 text <- twCleanText(text)
 tdm.matrix <- twBuildTDMMatrix(text, stopwords=opt$stopwords)
 
-try(twChartWordcloud(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height))
-try(twChartWordcloud(table=twTopHashtags(tweets_df$text, top=10),
+try(twChartWordcloud(table=twTopWords(text, top=20),
+                     width=opt$width, height=opt$height, output.file="wordcloud-hashtags.png"))
+try(twChartWordcloud(table=twTopHashtags(tweets_df$text, top=20),
                      width=opt$width, height=opt$height, output.file="wordcloud-hashtags.png"))
 try(twChartGivenTopics(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height))
 try(twChartWhoRetweetsWhom(tweets_df, width=opt$width, height=opt$height))

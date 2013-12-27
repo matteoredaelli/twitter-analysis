@@ -137,7 +137,7 @@ twChartAuthorsWithReplies <- function(df, output.dir=".", output.file="authors-w
     dev.off()
 }
 
-twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png", width=1000, height=500, color="red", top=30) {
+twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png", width=1000, height=500, color="red", top=30, from=1) {
     filename <- file.path(output.dir, output.file)
     
     d = aggregate(df$retweetCount, by=list(df$screenName), FUN=sum)
@@ -156,7 +156,9 @@ twChartInfluencers <- function(df, output.dir=".", output.file="influencers.png"
     m2[is.na(m2)] = 0
 
     top <- min(top, nrow(m2))
-    m2 <- m2[with(m2, order(-retweets, -tweets)),][1:top,]
+    from <- min(from, nrow(m2))
+    
+    m2 <- m2[with(m2, order(-retweets, -tweets)),][from:top,]
 
     ##m3 <- m2[order(-m2$tweets),]
 
@@ -311,7 +313,8 @@ twChartGivenTopics <- function(text=NULL, tdm.matrix=NULL, output.dir=".", outpu
     V(g)$label = V(g)$name
     V(g)$degree = degree(g)
     ##V(g)$label.cex = 1.5 * log10(V(g)$degree)
-    V(g)$label.color = hsv(0, 0, 0.2, 0.55)
+    ##V(g)$label.color = hsv(0, 0, 0.2, 0.55)
+    V(g)$label.color = "black"
     V(g)$frame.color = NA
     V(g)$color = gcols
     E(g)$color = hsv(0, 0, 0.7, 0.3)
