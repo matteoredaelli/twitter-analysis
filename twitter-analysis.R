@@ -80,20 +80,21 @@ df <- twNormalizeDate(tweets_df, opt$tz)
 
 twHistTweets(df, breaks="30 mins", width=opt$width, height=opt$height, color=opt$color)
 
-twChartAgents(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top)
-twChartAuthors(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top)
-twChartAuthorsWithRetweets(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top)
-twChartAuthorsWithReplies(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top)
-twChartInfluencers(df, width=opt$width, height=opt$height, color=opt$color)
+try(twChartAgents(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top))
+try(twChartAuthors(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top))
+try(twChartAuthorsWithRetweets(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top))
+try(twChartAuthorsWithReplies(df, width=opt$width, height=opt$height, color=opt$color, top=opt$top))
+try(twChartInfluencers(df, width=opt$width, height=opt$height, color=opt$color))
 
 text = tweets_df$text
 text <- twCleanText(text)
-tdm.matrix <- twBuildTDMMatrix(text, my.stopwords=opt$stopwords)
+tdm.matrix <- twBuildTDMMatrix(text, stopwords=opt$stopwords)
 
-twChartWordcloud(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
-twChartWordcloud(twTopHashtags(text, top=10), width=opt$width, height=opt$height, output.file="wordcloud-hashtags.png")
-twChartGivenTopics(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
-twChartWhoRetweetsWhom(tweets_df, width=opt$width, height=opt$height)
-twChartDendrogram(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height)
+try(twChartWordcloud(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height))
+try(twChartWordcloud(table=twTopHashtags(tweets_df$text, top=10),
+                     width=opt$width, height=opt$height, output.file="wordcloud-hashtags.png"))
+try(twChartGivenTopics(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height))
+try(twChartWhoRetweetsWhom(tweets_df, width=opt$width, height=opt$height))
+try(twChartDendrogram(tdm.matrix=tdm.matrix, width=opt$width, height=opt$height))
 
 # todo: http://bodongchen.com/blog/2013/02/demo-of-using-twitter-hashtag-analytics-package-to-analyze-tweets-from-lak13/

@@ -59,7 +59,9 @@ twTopLinks <- function(text, top=10) {
 }
 
 twTopHashtags <- function(text, top=10) {
-    sort(table(unlist(lapply(strsplit(tolower(text), '[ :.,;]'), function(w) grep('#', w, value=TRUE)))), decreasing=TRUE)[1:top]
+    t <- sort(table(unlist(lapply(strsplit(tolower(text), '[ :.,;]'), function(w) grep('#', w, value=TRUE)))), decreasing=TRUE)
+    top <- min(top, length(t))
+    return(t[1:top])
 }
 
 twTopWords <- function(text=NULL, tdm.matrix=NULL, stopwords=NULL, top=10) {
@@ -67,7 +69,9 @@ twTopWords <- function(text=NULL, tdm.matrix=NULL, stopwords=NULL, top=10) {
         tdm.matrix <- twBuildTDMMatrix(text, stopwords=stopwords)
     
     ## get word counts in decreasing order
-    sort(rowSums(tdm.matrix), decreasing=TRUE)[1:top]
+    t <- sort(rowSums(tdm.matrix), decreasing=TRUE)
+    top <- min(top, length(t))
+    return(t[1:top])
 }
 
 #########
@@ -228,7 +232,7 @@ twBuildTDMMatrix <- function(text, stopwords=c(stopwords("en"), stopwords("it"))
     ## create document term matrix applying some transformations
     tdm <- TermDocumentMatrix(corpus,
                               control = list(removePunctuation = TRUE,
-                                  stopwords =stopwords, stemDocument=TRUE,
+                                  stopwords=stopwords, stemDocument=TRUE,
                                   minWordLength=4,
                                   removeNumbers = TRUE, tolower = TRUE))
     ## define tdm as matrix
@@ -236,11 +240,13 @@ twBuildTDMMatrix <- function(text, stopwords=c(stopwords("en"), stopwords("it"))
     return(m)
 }
 
-twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, words=NULL, freqs=NULL, output.dir=".", output.file="wordcloud.png", width=1000, height=500, my.stopwords=c(stopwords("en"), stopwords("it"))) {
+twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, table=NULL, output.dir=".", output.file="wordcloud.png", width=1000, height=500, my.stopwords=c(stopwords("en"), stopwords("it"))) {
     filename <- file.path(output.dir, output.file)
 
-    if(!is.null(words) && !is.null(freqs)) {
-        dm <- data.frame(word=words, freq=freqs)
+    if(!is.null(table)) {
+        d.temp <- as.data.frame(table)
+        word <- rownames(d.temp)
+        freq <- d.temp[,1]
     } else {
         if(is.null(tdm.matrix))
             tdm.matrix <- twBuildTDMMatrix(text, stopwords=my.stopwords)
@@ -248,11 +254,12 @@ twChartWordcloud <- function(text=NULL, tdm.matrix=NULL, words=NULL, freqs=NULL,
         ## get word counts in decreasing order
         word_freqs = sort(rowSums(tdm.matrix), decreasing=TRUE) 
         ## create a data frame with words and their frequencies
-        dm <- data.frame(word=names(word_freqs), freq=word_freqs)
+        word <- names(word_freqs)
+        freq <- word_freqs
     }
     
     png(filename, width=width, height=height, units="px")
-    p <- wordcloud(dm$word, dm$freq, random.order=FALSE, max.words=Inf,
+    p <- wordcloud(word, freq, random.order=FALSE, max.words=Inf,
                    colors=brewer.pal(8, "Dark2"))
     print(p)
     ##colors=brewer.pal(8, "Dark2"), vfont=c("sans serif","plain"))
@@ -323,8 +330,6 @@ twChartWhoRetweetsWhom <- function(df, output.dir=".", output.file="who-retweets
     ##https://sites.google.com/site/miningtwitter/questions/user-tweets/who-retweet
     dm_txt <- df$text
     ## regular expressions to find retweets
-    grep("(RT|via)((?:\\b\\W*@\\w+)+)", dm_txt, 
-         ignore.case=TRUE, value=TRUE)
 
     ## which tweets are retweets
     rt_patterns = grep("(RT|via)((?:\\b\\W*@\\w+)+)", 
